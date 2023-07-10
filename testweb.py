@@ -3,112 +3,83 @@ import streamlit as st
 import matplotlib.pyplot as plt
 import plotly.express as px
 
-# Navigate the position of data
-st.set_page_config(page_title='OS data analysis',
-                   page_icon=':bar_chart',
-                   layout='wide')
+# Set page configuration
+st.set_page_config(page_title='Python 2 project dashboard', page_icon=':bar_chart:', layout='wide')
 
-# Import data into Streamlit
+# Load data from Excel file
 file_path = 'OS.xlsx'
+df = pd.read_excel(file_path, sheet_name='OS')
 
+#Sidebar filters
+st.sidebar.title('Please tick to adjust your expectation')
+bmi_groups = st.sidebar.multiselect('BMI Groups', df['Bmi_group'].unique(), df['Bmi_group'].unique())
+osteo_groups = st.sidebar.multiselect('Osteo Groups', df['Osteo_group'].unique(), df['Osteo_group'].unique())
+genders = st.sidebar.multiselect('Gender', df['Gender'].unique(), df['Gender'].unique())
 
-def read_excel(file_path):
-    df = pd.read_excel(file_path,
-                       engine='openpyxl',
-                       sheet_name='OS',
-                       skiprows=0,
-                       usecols='A:L',
-                       nrows=61)
-    return df
+# Apply filters to data
+filtered_df = df[(df['Bmi_group'].isin(bmi_groups)) & (df['Osteo_group'].isin(osteo_groups)) & (df['Gender'].isin(genders))]
 
-st.title(':bar_chart: Group 6 Osteo data')
-df = read_excel(file_path)
+# Display filtered data
+st.header(':bar_chart: Group 6 - Tuesday morning')
+st.subheader('OS sheet')
+st.dataframe(filtered_df)
 
-# Filter the data
-Bmi_group = st.sidebar.multiselect(
-    'Select BMI Group:',
-    options=df['Bmi_group'].unique(),
-    default=df['Bmi_group'].unique()
-)
+# Create a two-column layout
+col1, col2 = st.columns(2)
 
-Osteo_group = st.sidebar.multiselect(
-    'Select Osteo Group:',
-    options=df['Osteo_group'].unique(),
-    default=df['Osteo_group'].unique()
-)
+# Histogram of Lean Mass
+with col1:
+    st.subheader('Histogram of Lean Mass')
+    fig, ax = plt.subplots(figsize=(6, 3))
+    n, bins, patches = ax.hist(filtered_df['Lean_mass'], bins=30, color='r', edgecolor='k', alpha=0.5)
+    ax.set_xlabel('Lean Mass')
+    ax.set_ylabel('Frequency')
 
-Gender = st.sidebar.multiselect(
-    'Select Gender:',
-    options=df['Gender'].unique(),
-    default=df['Gender'].unique()
-)
+    # Hover event for Lean Mass histogram
+    bar_hover = st.empty()
+    def hover_lean_mass(event):
+        for rect in patches:
+            if rect.contains(event)[0]:
+                bar_hover.markdown(f"Value: {rect.get_height():.2f}")
+    fig.canvas.mpl_connect('motion_notify_event', hover_lean_mass)
 
-df_selection = df.query(
-    'Bmi_group == @Bmi_group & Osteo_group == @Osteo_group & Gender == @Gender'
-)
-st.dataframe(df_selection)
+    # Display Lean Mass histogram
+    st.pyplot(fig)
 
-# Build the main title
-st.title(':bar_chart: Graph and analysis')
-st.markdown('##')
+# Histogram of BMI
+with col2:
+    st.subheader('Histogram of BMI')
+    fig, ax = plt.subplots(figsize=(6, 3))
+    n, bins, patches = ax.hist(filtered_df['Bmi'], density=False, histtype='bar', color='b', edgecolor='k', alpha=0.5)
+    ax.set_xlabel('BMI')
+    ax.set_ylabel('Frequency')
 
-# The Histogram of Lean mass distribution
-fig, ax = plt.subplots()
-n, bins, patches = ax.hist(df_selection['Lean_mass'], bins=30, color='r', edgecolor='k', alpha=0.5)
-ax.set_xlabel('Lean mass')
-ax.set_ylabel('Frequency')
-ax.set_title('The histogram of Lean mass')
+    # Hover event for BMI histogram
+    bar_hover_bmi = st.empty()
+    def hover_bmi(event):
+        for rect in patches:
+            if rect.contains(event)[0]:
+                bar_hover_bmi.markdown(f"Value: {rect.get_height():.2f}")
+    fig.canvas.mpl_connect('motion_notify_event', hover_bmi)
 
-# Add interactivity for Lean mass histogram
-bar_hover = st.empty()
-
-
-# Function to handle hover event for Lean mass histogram
-def hover_lean_mass(event):
-    for rect in patches:
-        if rect.contains(event)[0]:
-            bar_hover.markdown(f"Value: {rect.get_height():.2f}")
-
-
-# Connect the hover event to the figure for Lean mass histogram
-fig.canvas.mpl_connect('motion_notify_event', hover_lean_mass)
-
-# Display the Lean mass histogram
-st.pyplot(fig)
+    # Display BMI histogram
+    st.pyplot(fig)
 
 st.markdown('###')
 
-# Create the scatter plot using Plotly Express
-fig = px.scatter(df_selection, x='Weight', y='Height', color='Bmi_group', title='Scatter Plot of Weight and Height')
+# Create a two-column layout for Scatter Plot and Bubble Chart
+col3, col4 = st.columns(2)
 
-# Add interactivity
-fig.update_traces(hovertemplate='<b>Weight</b>: %{x}<br><b>Height</b>: %{y}')
+# Scatter plot of Weight and Height
+with col3:
+    st.subheader('Scatter Plot of Weight and Height')
+    fig = px.scatter(filtered_df, x='Weight', y='Height', color='Bmi_group', title='Scatter Plot of Weight and Height')
+    fig.update_layout(width=800, height=400)
+    st.plotly_chart(fig)
 
-# Display the plot using Streamlit
-st.plotly_chart(fig)
-
-st.markdown('###')
-
-# The Histogram of BMI distribution
-fig, ax = plt.subplots()
-n, bins, patches = ax.hist(df_selection['Bmi'], density=False, histtype='bar', color='b', edgecolor='k', alpha=0.5)
-ax.set_xlabel('BMI')
-ax.set_ylabel('Frequency')
-ax.set_title('The histogram of BMI')
-
-# Add interactivity for BMI histogram
-bar_hover_bmi = st.empty()
-
-
-# Function to handle hover event for BMI histogram
-def hover_bmi(event):
-    for rect in patches:
-        if rect.contains(event)[0]:
-            bar_hover_bmi.markdown(f"Value: {rect.get_height():.2f}")
-
-
-# Connect the hover event to the figure for BMI histogram
-fig.canvas.mpl_connect('motion_notify_event', hover_bmi)
-
-# Display the BMI histogram
-st.pyplot(fig)
+# Bubble chart of Lean Mass and Fat Mass by Gender
+with col4:
+    st.subheader('Bubble Chart of Lean Mass and Fat Mass by Gender')
+    fig = px.scatter(filtered_df, x='Lean_mass', y='Fat_mass', size='Weight', color='Gender', title='Bubble Chart of Lean Mass and Fat Mass by Gender')
+    fig.update_layout(width=800, height=400)
+    st.plotly_chart(fig)
