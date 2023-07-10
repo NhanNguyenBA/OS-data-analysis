@@ -15,7 +15,7 @@ decorator==5.1.1
 docopt==0.6.2
 entrypoints==0.4
 et-xmlfile==1.1.0
-Flask==2.3.2
+Flask==2.2.5
 fonttools==4.39.4
 gitdb==4.0.10
 GitPython==3.1.31
