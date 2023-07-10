@@ -7,6 +7,7 @@ import plotly.express as px
 st.set_page_config(page_title='OS data analysis',
                    page_icon=':bar_chart',
                    layout='wide')
+sever - app.sever
 
 # Import data into Streamlit
 file_path = '/Users/nhannguyen/Desktop/PythonProject2/OS.xlsx'
