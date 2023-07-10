@@ -65,7 +65,6 @@ tzdata==2023.3
 tzlocal==4.3
 urllib3==2.0.2
 validators==0.20.0
-contourpy==1.0.7
 Werkzeug==2.3.4
 yarg==0.1.9
 zipp==3.15.0
