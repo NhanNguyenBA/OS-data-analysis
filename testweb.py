@@ -9,7 +9,7 @@ st.set_page_config(page_title='OS data analysis',
                    layout='wide')
 
 # Import data into Streamlit
-file_path = '/Users/nhannguyen/Desktop/PythonProject2/OS.xlsx'
+file_path = 'OS.xlsx'
 
 
 def read_excel(file_path):
